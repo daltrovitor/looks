@@ -72,11 +72,11 @@ export async function createPaymentIntent({ paymentMethod = 'card', email, name,
     try {
       data = JSON.parse(responseText);
     } catch {
-      throw new Error('Servidor indisponível ou chaves de pagamento pendentes. Tente novamente em instantes.');
+      throw new Error('Servidor de pagamento em inicialização. Tente novamente em instantes.');
     }
 
     if (!response.ok || data.error) {
-      throw new Error(data.error || 'Falha ao inicializar pagamento no servidor.');
+      throw new Error(data?.error || 'Falha ao inicializar pagamento no servidor.');
     }
 
     return data;
