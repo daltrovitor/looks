@@ -1,5 +1,5 @@
 /**
- * Determina a URL base da API dinamicamente para funcionar em Desenvolvimento e em Produção (Vercel, Render, VPS).
+ * Determina a URL base da API dinamicamente para funcionar em Desenvolvimento e em Produção (Vercel, Render, VPS, Viraweb).
  */
 const getApiBaseUrl = () => {
   if (import.meta.env.VITE_API_URL !== undefined && import.meta.env.VITE_API_URL !== '') {
@@ -28,11 +28,19 @@ export async function registerUserOnBackend({ email, password, name }) {
       body: JSON.stringify({ email, password, name }),
     });
 
-    if (!response.ok) {
+    const responseText = await response.text();
+    let data;
+    try {
+      data = JSON.parse(responseText);
+    } catch {
+      console.warn('Backend respondeu com formato não-JSON no cadastro, usando fallback de ID.');
       return { success: true, userId: 'usr_' + Date.now() };
     }
 
-    const data = await response.json();
+    if (!response.ok || data.error) {
+      return { success: true, userId: 'usr_' + Date.now() };
+    }
+
     return data;
   } catch (err) {
     console.warn('Backend de cadastro indisponível, usando fallback seguro:', err.message);
@@ -59,7 +67,14 @@ export async function createPaymentIntent({ paymentMethod = 'card', email, name,
       }),
     });
 
-    const data = await response.json();
+    const responseText = await response.text();
+    let data;
+    try {
+      data = JSON.parse(responseText);
+    } catch {
+      throw new Error('Servidor indisponível ou chaves de pagamento pendentes. Tente novamente em instantes.');
+    }
+
     if (!response.ok || data.error) {
       throw new Error(data.error || 'Falha ao inicializar pagamento no servidor.');
     }
@@ -77,7 +92,13 @@ export async function createPaymentIntent({ paymentMethod = 'card', email, name,
 export async function checkPaymentStatus(paymentIntentId) {
   try {
     const response = await fetch(`${API_BASE_URL}/api/payment-status/${paymentIntentId}`);
-    const data = await response.json();
+    const responseText = await response.text();
+    let data;
+    try {
+      data = JSON.parse(responseText);
+    } catch {
+      return { status: 'pending' };
+    }
 
     if (!response.ok || data.error) {
       throw new Error(data.error || 'Falha ao consultar status do pagamento.');

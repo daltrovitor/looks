@@ -16,7 +16,7 @@ router.post('/register-user', async (req, res) => {
     const cleanName = (name || '').trim() || cleanEmail.split('@')[0];
 
     if (!cleanEmail || !cleanEmail.includes('@')) {
-      return res.status(400).json({ error: 'E-mail válido é obrigatório.' });
+      return res.json({ error: 'E-mail válido é obrigatório.' });
     }
 
     // 1. Verifica se o usuário já existe no Supabase Auth
@@ -59,7 +59,7 @@ router.post('/create-payment-intent', async (req, res) => {
     const { paymentMethod = 'card', email, name, userId, amountInCents = 1790 } = req.body;
 
     if (!email || !email.includes('@')) {
-      return res.status(400).json({ error: 'E-mail válido é obrigatório para processar o pagamento.' });
+      return res.json({ error: 'E-mail válido é obrigatório para processar o pagamento.' });
     }
 
     if (paymentMethod === 'pix') {
@@ -72,7 +72,7 @@ router.post('/create-payment-intent', async (req, res) => {
 
   } catch (err) {
     console.error('[PAYMENT ROUTES] Erro ao criar PaymentIntent:', err.message);
-    return res.status(500).json({ 
+    return res.json({ 
       error: err.message || 'Falha ao comunicar com os serviços de pagamento.' 
     });
   }
@@ -86,14 +86,14 @@ router.get('/payment-status/:paymentIntentId', async (req, res) => {
   try {
     const { paymentIntentId } = req.params;
     if (!paymentIntentId) {
-      return res.status(400).json({ error: 'paymentIntentId é obrigatório.' });
+      return res.json({ error: 'paymentIntentId é obrigatório.' });
     }
 
     const statusInfo = await getPaymentStatus(paymentIntentId);
     return res.json(statusInfo);
   } catch (err) {
     console.error('[PAYMENT ROUTES] Erro ao verificar status:', err.message);
-    return res.status(500).json({ error: 'Erro ao consultar status do pagamento.' });
+    return res.json({ error: 'Erro ao consultar status do pagamento.' });
   }
 });
 
