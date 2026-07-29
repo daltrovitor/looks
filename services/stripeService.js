@@ -62,29 +62,32 @@ export async function createCardPaymentIntent({ amountInCents = 1790, email, nam
 
 /**
  * Cria um PaymentIntent oficial para PIX diretamente na API da Stripe.
- * Não utiliza nenhuma chave PIX pessoal ou estática.
  */
 export async function createPixPaymentIntent({ amountInCents = 1790, email, name, userId }) {
   const customer = await getOrCreateCustomer(email, name);
 
   try {
-    const paymentIntent = await stripe.paymentIntents.create({
-      amount: amountInCents,
-      currency: 'brl',
-      customer: customer?.id || undefined,
-      payment_method_types: ['pix'],
-      payment_method_data: {
+    // 1. Cria o PaymentMethod do tipo PIX na API da Stripe
+    let paymentMethodId;
+    try {
+      const pm = await stripe.paymentMethods.create({
         type: 'pix',
         billing_details: {
           email: email,
           name: name || 'Membro VIP'
         }
-      },
-      payment_method_options: {
-        pix: {
-          expires_after_seconds: 3600
-        }
-      },
+      });
+      paymentMethodId = pm.id;
+    } catch (pmErr) {
+      console.log('[STRIPE PIX PM WARNING]:', pmErr.message);
+    }
+
+    // 2. Cria e confirma o PaymentIntent para PIX
+    const intentParams = {
+      amount: amountInCents,
+      currency: 'brl',
+      customer: customer?.id || undefined,
+      payment_method_types: ['pix'],
       confirm: true,
       description: 'LooksNow VIP Vitalício - Pagamento PIX Oficial Stripe',
       metadata: {
@@ -92,38 +95,44 @@ export async function createPixPaymentIntent({ amountInCents = 1790, email, name
         email: email || '',
         plan: 'LOOKSNOW_VIP_VITALICIO'
       }
-    });
+    };
 
-    const pixInfo = paymentIntent.next_action?.pix_display_qr_code;
-
-    if (pixInfo) {
-      return {
-        clientSecret: paymentIntent.client_secret,
-        paymentIntentId: paymentIntent.id,
-        status: paymentIntent.status,
-        qrCodeUrl: pixInfo?.image_url_png || pixInfo?.hosted_instructions_url || `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(pixInfo?.data || '')}`,
-        pixPayload: pixInfo?.data || '',
-        expiresAt: pixInfo?.expires_at || null
+    if (paymentMethodId) {
+      intentParams.payment_method = paymentMethodId;
+    } else {
+      intentParams.payment_method_data = {
+        type: 'pix',
+        billing_details: {
+          email: email,
+          name: name || 'Membro VIP'
+        }
       };
     }
+
+    const paymentIntent = await stripe.paymentIntents.create(intentParams);
+
+    const pixInfo = paymentIntent.next_action?.pix_display_qr_code;
+    const pixDataString = pixInfo?.data || '';
+    const qrCodeImg = pixInfo?.image_url_png || 
+      (pixDataString ? `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(pixDataString)}` : '');
 
     return {
       clientSecret: paymentIntent.client_secret,
       paymentIntentId: paymentIntent.id,
       status: paymentIntent.status,
-      qrCodeUrl: '',
-      pixPayload: '',
-      expiresAt: null
+      qrCodeUrl: qrCodeImg,
+      pixPayload: pixDataString,
+      expiresAt: pixInfo?.expires_at || Math.floor(Date.now() / 1000) + 3600
     };
 
   } catch (err) {
     console.error('[STRIPE PIX ERROR]:', err.message);
     
     if (err.message?.includes('pix') || err.message?.includes('invalid')) {
-      throw new Error('Para utilizar o PIX oficial da Stripe, ative o método PIX em seu painel Stripe (dashboard.stripe.com/account/payments/settings -> PIX -> Ativar).');
+      throw new Error('Para utilizar o PIX oficial da Stripe, ative o método PIX no painel da sua conta Stripe (dashboard.stripe.com/account/payments/settings -> PIX -> Ativar).');
     }
 
-    throw new Error(`Erro na API da Stripe: ${err.message}`);
+    throw new Error(`Erro na API da Stripe ao gerar PIX: ${err.message}`);
   }
 }
 
