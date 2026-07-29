@@ -6,7 +6,10 @@ import dotenv from 'dotenv';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+// Carrega variáveis de ambiente (.env do backend e da raiz)
 dotenv.config({ path: path.resolve(__dirname, './.env') });
+dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
 import paymentRoutes from './routes/paymentRoutes.js';
 import webhookRoutes from './routes/webhookRoutes.js';
@@ -16,7 +19,7 @@ const PORT = process.env.PORT || 3001;
 
 // Middlewares
 app.use(cors({
-  origin: '*', // Permite requisições do frontend React (http://localhost:5173)
+  origin: '*', // Permite requisições de qualquer origem
 }));
 
 // Rota do Webhook do Stripe (deve vir ANTES de express.json())
@@ -26,19 +29,30 @@ app.use('/api', webhookRoutes);
 app.use(express.json());
 app.use('/api', paymentRoutes);
 
-// Health check
+// Health check da API
 app.get('/health', (req, res) => {
   res.json({ 
     status: 'ok', 
-    service: 'LooksNow Payment Backend', 
+    service: 'LooksNow Fullstack Server', 
     timestamp: new Date().toISOString() 
   });
 });
 
+// Servir arquivos estáticos do frontend React compilado (dist)
+const distPath = path.resolve(__dirname, '../dist');
+app.use(express.static(distPath));
+
+// Fallback SPA para rotas do React (qualquer requisição que não seja /api)
+app.get('*', (req, res) => {
+  if (req.path.startsWith('/api')) {
+    return res.status(404).json({ error: 'Rota de API não encontrada' });
+  }
+  res.sendFile(path.resolve(distPath, 'index.html'));
+});
+
 app.listen(PORT, () => {
   console.log(`====================================================`);
-  console.log(`🚀 Servidor Backend LooksNow Stripe rodando na porta ${PORT}`);
-  console.log(`🔗 API Base: http://localhost:${PORT}/api`);
-  console.log(`🔗 Webhook: http://localhost:${PORT}/api/webhook`);
+  console.log(`🚀 Servidor Unificado LooksNow rodando na porta ${PORT}`);
+  console.log(`🔗 Web App & API: http://localhost:${PORT}`);
   console.log(`====================================================`);
 });
