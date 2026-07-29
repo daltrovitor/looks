@@ -49,9 +49,14 @@ app.get('*', (req, res) => {
   res.sendFile(path.resolve(distPath, 'index.html'));
 });
 
-app.listen(PORT, () => {
-  console.log(`====================================================`);
-  console.log(`🚀 Servidor LooksNow rodando na porta ${PORT}`);
-  console.log(`🔗 Web App & API: http://localhost:${PORT}`);
-  console.log(`====================================================`);
-});
+// Executa app.listen apenas se não estiver rodando como função serverless (ex: Vercel)
+if (process.env.NODE_ENV !== 'test' && !process.env.VERCEL) {
+  app.listen(PORT, () => {
+    console.log(`====================================================`);
+    console.log(`🚀 Servidor LooksNow rodando na porta ${PORT}`);
+    console.log(`🔗 Web App & API: http://localhost:${PORT}`);
+    console.log(`====================================================`);
+  });
+}
+
+export default app;
