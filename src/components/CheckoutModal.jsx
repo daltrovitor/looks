@@ -481,6 +481,9 @@ export default function CheckoutModal({ isOpen, onClose, onCheckoutSuccess, onUs
                           }
                         }
                       }}
+                      onLoaderError={(err) => {
+                        setErrorMsg('Serviço de pagamento indisponível temporariamente. Atualize a página e tente novamente.');
+                      }}
                     >
                       <CardCheckoutForm 
                         onPaymentSuccess={handlePaymentCompleted}
