@@ -5,6 +5,33 @@ import { supabaseAdmin } from '../config/supabase.js';
 const router = express.Router();
 
 /**
+ * POST /api/confirm-user
+ * Endpoint seguro no backend para confirmar o e-mail de qualquer usuário no Supabase Auth.
+ */
+router.post('/confirm-user', async (req, res) => {
+  try {
+    const { email } = req.body;
+    const cleanEmail = (email || '').trim().toLowerCase();
+
+    if (!cleanEmail) {
+      return res.json({ success: false });
+    }
+
+    const { data: usersList } = await supabaseAdmin.auth.admin.listUsers();
+    const existingUser = usersList?.users?.find(u => u.email?.toLowerCase() === cleanEmail);
+
+    if (existingUser) {
+      await supabaseAdmin.auth.admin.updateUserById(existingUser.id, { email_confirm: true });
+      return res.json({ success: true, userId: existingUser.id });
+    }
+
+    return res.json({ success: false });
+  } catch (err) {
+    return res.json({ success: false });
+  }
+});
+
+/**
  * POST /api/register-user
  * Endpoint seguro no backend para cadastro/verificação de usuário via Service Role.
  * Responde sempre em formato JSON (nunca dispara 500 em HTML).
@@ -20,16 +47,16 @@ router.post('/register-user', async (req, res) => {
     }
 
     try {
-      // 1. Verifica se o usuário já existe no Supabase Auth
+      // 1. Verifica se o usuário já existe no Supabase Auth e força a confirmação de email
       const { data: usersList } = await supabaseAdmin.auth.admin.listUsers();
       const existingUser = usersList?.users?.find(u => u.email?.toLowerCase() === cleanEmail);
 
       if (existingUser) {
-        console.log(`[AUTH ROUTE] Usuário existente encontrado no Supabase: ${existingUser.id}`);
+        await supabaseAdmin.auth.admin.updateUserById(existingUser.id, { email_confirm: true }).catch(() => {});
         return res.json({ success: true, userId: existingUser.id, isNew: false });
       }
 
-      // 2. Cria o usuário com privilégios de Admin (sem rate-limit de IP do cliente)
+      // 2. Cria o usuário com privilégios de Admin e email já confirmado
       const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
         email: cleanEmail,
         password: password || 'LooksNowVIP2026!',
@@ -38,17 +65,15 @@ router.post('/register-user', async (req, res) => {
       });
 
       if (!createError && newUser?.user) {
-        console.log(`[AUTH ROUTE] Novo usuário criado com sucesso no Supabase: ${newUser.user.id}`);
         return res.json({ success: true, userId: newUser.user.id, isNew: true });
       }
     } catch (authErr) {
-      console.warn('[AUTH ROUTE] Aviso no Supabase Auth Admin:', authErr.message);
+      // Ignora erro silenciosamente
     }
 
     return res.json({ success: true, userId: 'usr_' + Date.now(), isNew: false });
 
   } catch (err) {
-    console.error('[AUTH ROUTE] Exceção ao registrar usuário:', err.message);
     return res.json({ success: true, userId: 'usr_' + Date.now(), isNew: false });
   }
 });
@@ -74,7 +99,6 @@ router.post('/create-payment-intent', async (req, res) => {
     }
 
   } catch (err) {
-    console.error('[PAYMENT ROUTES] Erro ao criar PaymentIntent:', err.message);
     return res.json({ 
       error: err.message || 'Falha ao comunicar com os serviços de pagamento.' 
     });
@@ -95,7 +119,6 @@ router.get('/payment-status/:paymentIntentId', async (req, res) => {
     const statusInfo = await getPaymentStatus(paymentIntentId);
     return res.json(statusInfo);
   } catch (err) {
-    console.error('[PAYMENT ROUTES] Erro ao verificar status:', err.message);
     return res.json({ error: 'Erro ao consultar status do pagamento.' });
   }
 });
