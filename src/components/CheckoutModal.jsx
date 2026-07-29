@@ -155,7 +155,6 @@ export default function CheckoutModal({ isOpen, onClose, onCheckoutSuccess, onUs
         }
       } catch (err) {
         if (active) {
-          console.error('Erro ao inicializar checkout:', err);
           setErrorMsg(err.message || 'Não foi possível se comunicar com o servidor de pagamento.');
         }
       } finally {
@@ -173,26 +172,6 @@ export default function CheckoutModal({ isOpen, onClose, onCheckoutSuccess, onUs
   const handlePaymentCompleted = async () => {
     const cleanEmail = email.trim();
     const cleanName = fullName.trim() || cleanEmail.split('@')[0];
-
-    const isUUID = (str) => typeof str === 'string' && /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(str);
-
-    try {
-      const authUser = (await supabase.auth.getUser())?.data?.user;
-      const validUuid = isUUID(currentUserId) ? currentUserId : (isUUID(authUser?.id) ? authUser?.id : null);
-      if (validUuid) {
-        await supabase
-          .from('profiles')
-          .upsert({
-            id: validUuid,
-            email: cleanEmail,
-            full_name: cleanName,
-            is_pro: true,
-            updated_at: new Date().toISOString()
-          });
-      }
-    } catch (err) {
-      console.warn('Erro ao atualizar status VIP no Supabase:', err);
-    }
 
     onCheckoutSuccess({
       id: currentUserId || 'user_' + Date.now(),

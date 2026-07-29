@@ -33,7 +33,6 @@ export async function registerUserOnBackend({ email, password, name }) {
     try {
       data = JSON.parse(responseText);
     } catch {
-      console.warn('Backend respondeu com formato não-JSON no cadastro, usando fallback de ID.');
       return { success: true, userId: 'usr_' + Date.now() };
     }
 
@@ -43,7 +42,6 @@ export async function registerUserOnBackend({ email, password, name }) {
 
     return data;
   } catch (err) {
-    console.warn('Backend de cadastro indisponível, usando fallback seguro:', err.message);
     return { success: true, userId: 'usr_' + Date.now() };
   }
 }
@@ -81,7 +79,6 @@ export async function createPaymentIntent({ paymentMethod = 'card', email, name,
 
     return data;
   } catch (err) {
-    console.error('Erro na chamada do servidor de pagamento:', err.message);
     throw new Error(err.message || 'Não foi possível conectar ao servidor de pagamento.');
   }
 }
@@ -106,7 +103,6 @@ export async function checkPaymentStatus(paymentIntentId) {
 
     return data;
   } catch (err) {
-    console.warn('Erro ao consultar status:', err.message);
     return { status: 'pending' };
   }
 }
