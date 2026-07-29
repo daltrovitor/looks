@@ -10,7 +10,7 @@ dotenv.config({ path: path.resolve(__dirname, '../.env') });
 const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
 
 if (!stripeSecretKey) {
-  console.error('ERRO CRÍTICO: STRIPE_SECRET_KEY não encontrada no .env do backend.');
+  console.error('AVISO: STRIPE_SECRET_KEY não encontrada no .env.');
 }
 
 export const stripe = new Stripe(stripeSecretKey || '', {

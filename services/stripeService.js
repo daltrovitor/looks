@@ -101,14 +101,12 @@ export async function createPixPaymentIntent({ amountInCents = 1790, email, name
   } catch (err) {
     console.error('[STRIPE SERVICE] Erro ao criar PIX no Stripe:', err.message);
 
-    // Se o método PIX ainda não estiver ativado no painel do Stripe em modo de teste,
-    // tenta a criação sem confirmação automática para registrar o PaymentIntent na dashboard do Stripe.
     try {
       const fallbackIntent = await stripe.paymentIntents.create({
         amount: amountInCents,
         currency: 'brl',
         customer: customer?.id,
-        payment_method_types: ['card'],
+        payment_method_types: ['card', 'pix'],
         description: 'LooksNow VIP Vitalício - Pagamento Registrado',
         metadata: {
           userId: userId || '',
@@ -154,18 +152,15 @@ export async function createPixPaymentIntent({ amountInCents = 1790, email, name
  * Consulta o status atual de um PaymentIntent no Stripe.
  */
 export async function getPaymentStatus(paymentIntentId) {
-  if (paymentIntentId && paymentIntentId.startsWith('pix_sim_')) {
+  if (paymentIntentId && pixTestStore.has(paymentIntentId)) {
     const simData = pixTestStore.get(paymentIntentId);
-    if (simData) {
-      return {
-        id: simData.id,
-        status: simData.status,
-        amount: 1790,
-        currency: 'brl',
-        metadata: { userId: simData.userId, email: simData.email }
-      };
-    }
-    return { id: paymentIntentId, status: 'succeeded', amount: 1790, currency: 'brl' };
+    return {
+      id: simData.id,
+      status: simData.status,
+      amount: 1790,
+      currency: 'brl',
+      metadata: { userId: simData.userId, email: simData.email }
+    };
   }
 
   const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
@@ -177,4 +172,3 @@ export async function getPaymentStatus(paymentIntentId) {
     metadata: paymentIntent.metadata
   };
 }
-

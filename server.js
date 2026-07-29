@@ -7,9 +7,8 @@ import dotenv from 'dotenv';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Carrega variáveis de ambiente (.env do backend e da raiz)
+// Carrega variáveis do arquivo .env na raiz
 dotenv.config({ path: path.resolve(__dirname, './.env') });
-dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
 import paymentRoutes from './routes/paymentRoutes.js';
 import webhookRoutes from './routes/webhookRoutes.js';
@@ -19,7 +18,7 @@ const PORT = process.env.PORT || 3001;
 
 // Middlewares
 app.use(cors({
-  origin: '*', // Permite requisições de qualquer origem
+  origin: '*',
 }));
 
 // Rota do Webhook do Stripe (deve vir ANTES de express.json())
@@ -33,13 +32,13 @@ app.use('/api', paymentRoutes);
 app.get('/health', (req, res) => {
   res.json({ 
     status: 'ok', 
-    service: 'LooksNow Fullstack Server', 
+    service: 'LooksNow Unified Server', 
     timestamp: new Date().toISOString() 
   });
 });
 
 // Servir arquivos estáticos do frontend React compilado (dist)
-const distPath = path.resolve(__dirname, '../dist');
+const distPath = path.resolve(__dirname, './dist');
 app.use(express.static(distPath));
 
 // Fallback SPA para rotas do React (qualquer requisição que não seja /api)
@@ -52,7 +51,7 @@ app.get('*', (req, res) => {
 
 app.listen(PORT, () => {
   console.log(`====================================================`);
-  console.log(`🚀 Servidor Unificado LooksNow rodando na porta ${PORT}`);
+  console.log(`🚀 Servidor LooksNow rodando na porta ${PORT}`);
   console.log(`🔗 Web App & API: http://localhost:${PORT}`);
   console.log(`====================================================`);
 });

@@ -1,7 +1,7 @@
 import { supabaseAdmin } from '../config/supabase.js';
 
 /**
- * Libera o acesso VIP e registra a transação no Supabase após confirmação de pagamento pelo Stripe Webhook.
+ * Libera o acesso VIP e registra a transação no Supabase após confirmação de pagamento pelo Stripe.
  */
 export async function fulfillPayment({ userId, email, paymentIntentId, amount, paymentMethod, customerId }) {
   console.log(`[SUPABASE SERVICE] Processando liberação VIP para: email=${email}, userId=${userId}, paymentIntentId=${paymentIntentId}`);
@@ -9,7 +9,6 @@ export async function fulfillPayment({ userId, email, paymentIntentId, amount, p
   try {
     let targetUserId = userId;
 
-    // Se o userId não for fornecido diretamente, busca o perfil pelo e-mail
     if (!targetUserId && email) {
       const { data: userByEmail } = await supabaseAdmin
         .from('profiles')
@@ -22,7 +21,6 @@ export async function fulfillPayment({ userId, email, paymentIntentId, amount, p
       }
     }
 
-    // 1. Atualiza o status do perfil para is_pro = true
     if (targetUserId) {
       const { error: profileError } = await supabaseAdmin
         .from('profiles')
@@ -38,7 +36,6 @@ export async function fulfillPayment({ userId, email, paymentIntentId, amount, p
         console.log(`[SUPABASE SERVICE] Sucesso: Perfil ${targetUserId} promovido a VIP (is_pro = true).`);
       }
 
-      // 2. Insere o registro em user_purchases
       const { error: purchaseError } = await supabaseAdmin
         .from('user_purchases')
         .insert({

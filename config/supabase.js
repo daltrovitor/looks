@@ -7,11 +7,11 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
-const supabaseUrl = process.env.SUPABASE_URL || '';
+const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || '';
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
 
 if (!supabaseUrl || !supabaseServiceKey) {
-  console.warn('AVISO: Variáveis do Supabase Service Role não totalmente configuradas no backend.');
+  console.warn('AVISO: Variáveis do Supabase Service Role não totalmente configuradas.');
 }
 
 export const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {

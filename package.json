@@ -4,9 +4,9 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "server": "node backend/server.js",
-    "start": "node backend/server.js",
+    "dev": "concurrently -n \"SERVER,VITE\" -c \"yellow,cyan\" \"node server.js\" \"vite\"",
+    "server": "node server.js",
+    "start": "node server.js",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview"
@@ -16,6 +16,7 @@
     "@stripe/stripe-js": "^9.12.1",
     "@supabase/supabase-js": "^2.111.0",
     "@tailwindcss/vite": "^4.3.3",
+    "concurrently": "^9.1.2",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
