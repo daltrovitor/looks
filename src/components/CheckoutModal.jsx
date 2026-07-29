@@ -7,8 +7,10 @@ import { supabase } from '../utils/supabaseClient';
 import { createPaymentIntent, checkPaymentStatus, registerUserOnBackend } from '../services/api';
 
 const fallbackPublishableKey = 'pk_test_51SL6pD3Z13ACzFAyVCPBYFWeHUjczuqK89LEfJXQg6dAQQSgEKqsJZTElf7FI9chmV8s2hEHn01mtWD5flS9EgWT00L4Z31QBv';
-const rawPublishable = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || '';
-const PUBLISHABLE_KEY = (rawPublishable && rawPublishable.startsWith('pk_test_')) ? rawPublishable : fallbackPublishableKey;
+const rawPublishable = (import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || '').trim();
+const PUBLISHABLE_KEY = (rawPublishable.startsWith('pk_test_') || rawPublishable.startsWith('pk_live_'))
+  ? rawPublishable
+  : fallbackPublishableKey;
 const stripePromise = loadStripe(PUBLISHABLE_KEY);
 
 /**
