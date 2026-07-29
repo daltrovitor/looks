@@ -1,0 +1,141 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;0,800;0,900;1,600&family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import "tailwindcss";
+
+:root {
+  --bg-main: #070709;
+  --bg-card: #0e0e12;
+  --bg-card-hover: #14141a;
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  --border-gold: rgba(234, 179, 8, 0.25);
+  --gold-accent: #eab308;
+  --gold-glow: rgba(234, 179, 8, 0.12);
+}
+
+body {
+  background-color: var(--bg-main);
+  color: #f4f4f5;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Enforce cursor pointer on all interactive elements */
+button,
+[role="button"],
+label,
+a,
+select,
+input[type="submit"],
+input[type="button"] {
+  cursor: pointer !important;
+}
+
+.font-serif-title {
+  font-family: 'Playfair Display', Georgia, serif;
+}
+
+.font-mono-tech {
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #070709;
+}
+::-webkit-scrollbar-thumb {
+  background: #27272a;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #3f3f46;
+}
+
+/* Luxury Card & Glass Panel Utilities */
+.glass-panel {
+  background: rgba(14, 14, 18, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--border-subtle);
+}
+
+.glass-panel-gold {
+  background: rgba(14, 14, 18, 0.9);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--border-gold);
+}
+
+/* Restrained Gold Highlights (No Yellow Overload) */
+.gold-metallic-text {
+  color: #fbbf24;
+}
+
+.yellow-cta-btn {
+  background-color: #eab308;
+  color: #070709;
+  font-weight: 700;
+  cursor: pointer !important;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.yellow-cta-btn:hover {
+  background-color: #facc15;
+  transform: translateY(-1px);
+  box-shadow: 0 8px 25px -4px rgba(234, 179, 8, 0.3);
+}
+
+.yellow-cta-btn:active {
+  transform: scale(0.98);
+}
+
+/* Secondary Refined Dark Button */
+.btn-dark-secondary {
+  background-color: #121216;
+  color: #e4e4e7;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  font-weight: 600;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.btn-dark-secondary:hover {
+  background-color: #1a1a22;
+  border-color: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+}
+
+.btn-dark-secondary:active {
+  transform: scale(0.98);
+}
+
+/* Hide scrollbar utility */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Subtle Vignette & Grain Overlay */
+.hero-vignette {
+  box-shadow: inset 0 0 100px rgba(0, 0, 0, 0.8);
+}
+
+/* Hide Stripe Developer Assistant Floating Badge */
+body > iframe[src*="stripe"],
+iframe[title*="Developer Assistant"],
+div[id*="stripe-developer"],
+div[class*="stripe-developer"],
+[data-stripe-developer-assistant] {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
